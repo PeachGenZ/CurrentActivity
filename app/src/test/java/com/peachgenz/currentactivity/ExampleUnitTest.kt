@@ -1,4 +1,4 @@
-package com.tt.currentactivity
+package com.peachgenz.currentactivity
 
 import org.junit.Test
 

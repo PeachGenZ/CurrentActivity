@@ -1,4 +1,4 @@
-package com.tt.currentactivity
+package com.peachgenz.currentactivity.service
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
@@ -9,15 +9,11 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import com.peachgenz.currentactivity.FloatingWindow
+import com.peachgenz.currentactivity.IFloatingWindowState
+import com.peachgenz.currentactivity.MainActivity
 
-/**
- * @author tt
- * @date 2022/2/9-17:19
- * @description
- */
-class WindowStateChangeService :
-    AccessibilityService(),
-    IFloatingWindowState {
+class WindowStateChangeService : AccessibilityService(), IFloatingWindowState {
 
     private val mHandler by lazy { Handler(Looper.getMainLooper()) }
     private var isFloatingWindowHide = false

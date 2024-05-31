@@ -1,7 +1,5 @@
-package com.tt.currentactivity
+package com.peachgenz.currentactivity.service
 
-import android.annotation.TargetApi
-import android.app.ActivityManager
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.app.Service
@@ -9,17 +7,18 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
-import android.os.*
+import android.os.Handler
+import android.os.IBinder
+import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
-import java.util.*
+import com.peachgenz.currentactivity.FloatingWindow
+import com.peachgenz.currentactivity.IFloatingWindowState
+import com.peachgenz.currentactivity.MainActivity
+import java.util.Timer
+import java.util.TimerTask
 
-class WatchingService :
-    Service(),
-    IFloatingWindowState {
-
-    private val mActivityManager: ActivityManager by lazy {
-        getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-    }
+class WatchingService : Service(), IFloatingWindowState {
 
     private var timer: Timer? = null
 
@@ -47,7 +46,6 @@ class WatchingService :
         return super.onStartCommand(intent, flags, startId)
     }
 
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     override fun onTaskRemoved(rootIntent: Intent) {
         Log.d("WatchingService", "Watching Service onTaskRemoved")
         val restartServiceIntent = Intent(applicationContext, this.javaClass).apply {
@@ -55,7 +53,7 @@ class WatchingService :
         }
         val restartServicePendingIntent = PendingIntent.getService(
             applicationContext, 1, restartServiceIntent,
-            PendingIntent.FLAG_ONE_SHOT
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
         val alarmService =
             applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -66,7 +64,7 @@ class WatchingService :
 
     internal inner class RefreshTask : TimerTask() {
         override fun run() {
-            val name = getCurrentActivityName()
+            val name = getCurrentActivityName().substringAfterLast(".")
             if (lastName == name) {
                 return
             }
@@ -80,23 +78,18 @@ class WatchingService :
 
     private fun getCurrentActivityName(): String {
         var topActivityName = ""
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            val usageStatsManager =
-                getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-            val now = System.currentTimeMillis()
-            val events = usageStatsManager.queryEvents(now - 600000, now)
-            while (events.hasNextEvent()) {
-                val event = UsageEvents.Event()
-                events.getNextEvent(event)
-                if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
-                    topActivityName = "${event.packageName}\n${event.className}"
-                }
+
+        val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val now = System.currentTimeMillis()
+        val events = usageStatsManager.queryEvents(now - 600000, now)
+        while (events.hasNextEvent()) {
+            val event = UsageEvents.Event()
+            events.getNextEvent(event)
+            if (event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
+                topActivityName = "${event.packageName}\n${event.className}"
             }
-        } else {
-            val forGroundActivity = mActivityManager.getRunningTasks(1)
-            topActivityName =
-                forGroundActivity[0].topActivity!!.packageName + "\n" + forGroundActivity[0].topActivity!!.className
         }
+
         return topActivityName
     }
 

@@ -1,19 +1,13 @@
-package com.tt.currentactivity
+package com.peachgenz.currentactivity
 
 import android.content.Context
 import android.graphics.PixelFormat
-import android.os.Build
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.WindowManager
-import com.tt.currentactivity.databinding.LayoutFloatingWindowBinding
+import com.peachgenz.currentactivity.databinding.LayoutFloatingWindowBinding
 
-/**
- * @author tt
- * @date 2022/2/10-10:54
- * @description
- */
 class FloatingWindow(private val mContext: Context) {
 
     private val mWindowManager: WindowManager by lazy {
@@ -31,15 +25,11 @@ class FloatingWindow(private val mContext: Context) {
 
     private val mParams by lazy {
         WindowManager.LayoutParams().apply {
-            type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // Android O new feature.
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            } else {
-                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
-            }
+            type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             format = PixelFormat.RGBA_8888
             flags =
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-            gravity = Gravity.LEFT or Gravity.TOP
+            gravity = Gravity.END or Gravity.TOP
             x = 0
             y = 0
             width = WindowManager.LayoutParams.WRAP_CONTENT
