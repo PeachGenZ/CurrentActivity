@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.os.Process.myUid
 import androidx.appcompat.app.AppCompatActivity
@@ -29,10 +28,10 @@ class MainActivity : AppCompatActivity() {
     private val viewbinding: ActivityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
-
+    private val serviceIntent by lazy {
+        Intent(this@MainActivity, WatchingService::class.java)
+    }
     private var permissionHelper = PermissionHelper()
-    private var isUseAccessibilityService = false
-    private var isManualHide = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,72 +51,44 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() {
         viewbinding.swFloat.setOnCheckedChangeListener { _, isChecked ->
-            when {
-                isChecked && isUseAccessibilityService -> {
+            when (isChecked) {
+                true -> {
                     floatingWindow?.show()
+                    startWatchingService()
                 }
 
-                isChecked -> startWatchingService()
-
-                else -> floatingWindow?.hide()
+                false -> {
+                    floatingWindow?.hide()
+                    stopWatchingService()
+                }
             }
-
-            isManualHide = !isChecked
         }
     }
 
-    private fun getTopActivity() {
-        if (isUseAccessibilityService) {
-            useAccessibilityToGet()
-        } else {
-            useUsageStateToGet()
-        }
-    }
-
-    private fun useAccessibilityToGet() {
-        if (permissionHelper.isAccessibilityEnabled(this)) {
-            if (!isManualHide) {
-                viewbinding.swFloat.isChecked = true
-            }
-            return
-        }
-
-        permissionHelper.showAccessibilityPermissionDialog(this)
-        return
-    }
+    private fun getTopActivity() = useUsageStateToGet()
 
     private fun useUsageStateToGet() {
         if (isUsageStatsPermissionEnabled()) {
-            if (!isManualHide) {
-                viewbinding.swFloat.isChecked = true
-            }
-            return
+            viewbinding.swFloat.isChecked = true
+        } else {
+            permissionHelper.showUsageAccessPermissionDialog(this)
         }
-
-        permissionHelper.showUsageAccessPermissionDialog(this)
-        return
     }
 
     private fun isUsageStatsPermissionEnabled(): Boolean {
         getSystemService(Context.APP_OPS_SERVICE)?.let {
             val appOps = it as AppOpsManager
-            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                appOps.unsafeCheckOpNoThrow(
-                    AppOpsManager.OPSTR_GET_USAGE_STATS,
-                    myUid(),
-                    packageName
-                )
-            } else {
-                appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, myUid(), packageName)
-            }
+            val mode = appOps.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                myUid(),
+                packageName
+            )
 
             return mode == AppOpsManager.MODE_ALLOWED
         }
         return false
     }
 
-    private fun startWatchingService() {
-        val intent = Intent(this@MainActivity, WatchingService::class.java)
-        startService(intent)
-    }
+    private fun startWatchingService() = startService(serviceIntent)
+    private fun stopWatchingService() = stopService(serviceIntent)
 }

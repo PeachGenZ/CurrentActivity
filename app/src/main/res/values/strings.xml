@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CurrentActivity</string>
+    <string name="app_name">Current Activity</string>
     <string name="sw_enable_float_window">Enable Current Activity</string>
     <string name="require_app_overlay_permission_dialog">Require display over other app permission</string>
     <string name="require_usage_access_permission_dialog">Require usage access app permission</string>

@@ -15,8 +15,7 @@ class FloatingWindow(private val mContext: Context) {
     }
 
     private val layoutInflater by lazy {
-        LayoutInflater.from(mContext)
-            .inflate(R.layout.layout_floating_window, null)
+        LayoutInflater.from(mContext).inflate(R.layout.layout_floating_window, null)
     }
 
     private val mBinding: LayoutFloatingWindowBinding by lazy {
@@ -38,10 +37,6 @@ class FloatingWindow(private val mContext: Context) {
     }
 
     private var isShow = false
-
-    fun onWindowChange(packageName: String, activityName: String) {
-        mBinding.tvContent.text = packageName + "\n" + activityName
-    }
 
     fun onWindowChange(name: String) {
         if (name.isEmpty()) {

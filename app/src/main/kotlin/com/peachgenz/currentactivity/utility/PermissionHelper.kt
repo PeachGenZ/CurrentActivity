@@ -5,23 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import android.util.Log
-import android.view.accessibility.AccessibilityManager
 import androidx.appcompat.app.AlertDialog
 import com.peachgenz.currentactivity.R
 
 class PermissionHelper {
     fun isCanDrawOverlays(context: Context): Boolean = Settings.canDrawOverlays(context)
-
-    fun isAccessibilityEnabled(activity: Activity): Boolean {
-        val am = activity.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-        return am.isEnabled.also {
-            Log.d(
-                "MainActivity",
-                "AccessibilityService服务是否已经启动：$it"
-            )
-        }
-    }
 
     fun showUsageAccessPermissionDialog(activity: Activity) {
         AlertDialog.Builder(activity)
@@ -35,20 +23,6 @@ class PermissionHelper {
                 dialogInterface.dismiss()
             }
             .setNegativeButton(activity.getString(R.string.button_cancel)) { dialogInterface, _ ->
-                dialogInterface.dismiss()
-            }
-            .create()
-            .show()
-    }
-
-    fun showAccessibilityPermissionDialog(activity: Activity) {
-        AlertDialog.Builder(activity)
-            .setMessage("需要开启无障碍服务")
-            .setPositiveButton("去设置") { dialogInterface, _ ->
-                activity.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                dialogInterface.dismiss()
-            }
-            .setNegativeButton("取消") { dialogInterface, _ ->
                 dialogInterface.dismiss()
             }
             .create()
